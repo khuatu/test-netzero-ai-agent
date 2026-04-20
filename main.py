@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from agent.graph import agent_app
 from agent.state import OnboardingState
 
-app = FastAPI(title="NetZero AI Onboarding Agent", version="1.0.0")
+app = FastAPI(title="Test: NetZero AI Onboarding Agent", version="1.0.0")
 
 class StudentData(BaseModel):
     name: str
