@@ -1,0 +1,23 @@
+# requirements.txt
+# ==================================================
+# Vollständig kostenloser Stack für den NetZero AI Agent
+# ==================================================
+
+# Core Web & API Framework
+fastapi>=0.115.0,<1.0.0
+uvicorn[standard]>=0.32.0,<1.0.0
+
+# LangGraph & LangChain Ecosystem (v1.0+)
+langgraph>=1.0.0,<2.0.0
+langchain>=1.0.0,<2.0.0
+langchain-core>=1.0.0,<2.0.0
+
+# 🔑 Der neue, kostenlose Motor: Ollama Integration
+langchain-ollama>=1.0.0,<2.0.0
+
+# Datenvalidierung & Konfiguration
+pydantic>=2.9.0,<3.0.0
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=8.0.0
