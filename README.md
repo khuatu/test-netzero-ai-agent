@@ -49,6 +49,8 @@ Ein KI-gesteuerter Agent zur automatisierten Aufnahme neuer Studenten an der Net
 
 7. Testen
     ```
+   http://127.0.0.1:8000/docs
+   
    {
      "name": "Anna Solar",
      "email": "anna@example.com",
@@ -56,5 +58,19 @@ Ein KI-gesteuerter Agent zur automatisierten Aufnahme neuer Studenten an der Net
      "role": "Projektleiterin"
     }
 
-```
-pytest tests/
+
+   pytest tests/
+   
+8. ngrok
+- ngrok Dateipfad
+   ``` 
+  ngrok http 8000
+- URL kopieren, die nach dem Schema aufgebaut ist:
+   ```
+  Forwarding  https://xxxx-xx-xx-xx-xx.ngrok-free.app -> http://localhost:8000
+
+9. make.com
+- Szenario erstellen und laufen lassen
+- Beispielaufruf auf PS
+   ```
+  Invoke-RestMethod -Uri "<WEBHOOK-URL>" -Method Post -ContentType "application/json" -Body '{"name":"Test User","email":"test@example.com","company":"Test GmbH","role":"Ingenieur"}'
