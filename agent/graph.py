@@ -3,10 +3,15 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field
 from langchain_ollama import ChatOllama
+import sys
+from agent.logging_config import setup_logging, get_logger
 from agent.state import OnboardingState
 
 load_dotenv()
 
+# Logging initialisieren (einmalig beim Import)
+setup_logging(level="INFO", json_format=False)  # In Produktion auf json_format=True setzen
+logger = get_logger(__name__)
 
 class CourseSuggestions(BaseModel):
     suggestions: list[str] = Field(description="Liste der vorgeschlagenen Kurse, maximal 3")
@@ -16,13 +21,18 @@ def validate_email(state: OnboardingState) -> dict:
     email = state.student_data.get("email", "")
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     valid = re.match(pattern, email) is not None
+
     if valid:
+        logger.debug("E-Mail validiert", email=email, valid=True)
         return {"email_valid": True, "error_message": None}
     else:
+        logger.warning("Ungültige E-Mail", email=email)
         return {"email_valid": False, "error_message": f"Ungültige E-Mail-Adresse: {email}"}
 
 
 def analyze_profile(state: OnboardingState) -> dict:
+    logger.info("Starte Profilanalyse", student=state.student_data.get('name'))
+
     prompt = f"""
     Du bist ein erfahrener Bildungsberater der NetZero Academy.
     Analysiere das Profil eines neuen Interessenten:
@@ -35,19 +45,32 @@ def analyze_profile(state: OnboardingState) -> dict:
     """
     llm = ChatOllama(model="llama3.2", temperature=0.3)
     structured_llm = llm.with_structured_output(CourseSuggestions)
+
     try:
         result = structured_llm.invoke(prompt)
         suggestions = result.suggestions
+        logger.info("Profilanalyse abgeschlossen",
+                    student=state.student_data.get('name'),
+                    suggestion_count=len(suggestions),
+                    suggestions=suggestions)
     except Exception as e:
-        print(f"[Analyze] Fehler: {e}")
+        logger.error("LLM-Anfrage fehlgeschlagen",
+                     student=state.student_data.get('name'),
+                     error=str(e),
+                     exc_info=True)
         suggestions = []
+
     return {"course_suggestions": suggestions}
 
 
 #Bisher nur Platzhalter
 def create_hubspot_contact(state: OnboardingState) -> dict:
+    logger.info("Erstelle HubSpot-Kontakt",
+                name=state.student_data.get('name'),
+                email=state.student_data.get('email'))
     print(f"[HubSpot] Erstelle Kontakt für {state.student_data.get('name')}")
     contact_id = f"hubspot_contact_{hash(state.student_data.get('email'))}"
+    logger.info("HubSpot-Kontakt erstellt (Mock)", contact_id=contact_id)
     return {"hubspot_contact_id": contact_id}
 
 
@@ -63,6 +86,9 @@ def create_calendar_event(state: OnboardingState) -> dict:
 
 def handle_error(state: OnboardingState) -> dict:
     print(f"[ERROR] {state.error_message}")
+    logger.error("Fehler im Workflow",
+                 error_message=state.error_message,
+                 student_data=state.student_data)
     return {}
 
 
